@@ -11,85 +11,85 @@ Jogo completo de **Batalha Naval** desenvolvido em Python para ambiente desktop,
 
 ---
 
-## Decisoes de Arquitetura e Engenharia de Software
+## Decisões de Arquitetura e Engenharia de Software
 
-1. **Separacao Estrita entre Backend e Frontend**:
-   - Todo o estado do jogo, validacao de regras, modelos de entidades (Navio, Posicao, Tabuleiro, Jogador, Partida) e algoritmos de Inteligencia Artificial residem exclusivamente no pacote `backend`.
+1. **Separação Estrita entre Backend e Frontend**:
+   - Todo o estado do jogo, validação de regras, modelos de entidades (Navio, Posição, Tabuleiro, Jogador, Partida) e algoritmos de Inteligência Artificial residem exclusivamente no pacote `backend`.
    - A camada `frontend` atua como visualizadora e controladora de interface, reagindo a eventos de entrada e renderizando o estado fornecido pelo backend, garantindo baixo acoplamento e alta testabilidade.
 
-2. **Canvas Virtual e Independencia de Resolucao**:
-   - A aplicacao renderiza internamente em uma superficie virtual fixa de 1280x720 pixels (`canvas_virtual`).
-   - A janela de exibicao final redimensiona e projeta esse canvas mantendo a proporcao correta (com barras pretas/letterbox se necessario), permitindo transitar entre Modo Janela (padrao) e Tela Cheia sem distorcao visual.
+2. **Canvas Virtual e Independência de Resolução**:
+   - A aplicação renderiza internamente em uma superfície virtual fixa de 1280x720 pixels (`canvas_virtual`).
+   - A janela de exibição final redimensiona e projeta esse canvas mantendo a proporção correta (com barras pretas/letterbox se necessário), permitindo transitar entre Modo Janela (padrão) e Tela Cheia sem distorção visual.
 
-3. **Padroes de Projeto de Software Adotados**:
-   - **Strategy e Factory Method (`backend/ia`)**: As diferentes dificuldades de IA herdam de uma interface abstrata (`IABase`) e sao instanciadas dinamicamente via `FabricaIA`.
-   - **Repository Pattern (`backend/database`)**: O acesso ao banco SQLite e encapsulado na classe `Repositorio`, isolando consultas SQL do restante da aplicacao.
-   - **Singleton (`frontend/core`)**: Os gerenciadores de recursos visuais (`GerenciadorAssets`) e sonoros (`GerenciadorSom`) utilizam instancia unica para evitar recarregamento repetido de arquivos em disco.
-   - **State Pattern / Pilha de Telas (`main.py` e `frontend/telas`)**: A navegacao entre telas utiliza uma pilha historica, viabilizando transicoes consistentes e retrocesso multinivel.
+3. **Padrões de Projeto de Software Adotados**:
+   - **Strategy e Factory Method (`backend/ia`)**: As diferentes dificuldades de IA herdam de uma interface abstrata (`IABase`) e são instanciadas dinamicamente via `FabricaIA`.
+   - **Repository Pattern (`backend/database`)**: O acesso ao banco SQLite é encapsulado na classe `Repositorio`, isolando consultas SQL do restante da aplicação.
+   - **Singleton (`frontend/core`)**: Os gerenciadores de recursos visuais (`GerenciadorAssets`) e sonoros (`GerenciadorSom`) utilizam instância única para evitar recarregamento repetido de arquivos em disco.
+   - **State Pattern / Pilha de Telas (`main.py` e `frontend/telas`)**: A navegação entre telas utiliza uma pilha histórica, viabilizando transições consistentes e retrocesso multinível.
 
-4. **Persistencia Relacional com SQLite**:
-   - Optou-se pelo SQLite nativo da biblioteca padrao Python por sua confiabilidade ACID, sem necessidade de servidores externos locais.
-   - O esquema armazena perfis de jogadores, metricas agregadas de desempenho (vitorias, derrotas, precisao, sequencias de acertos) e a serializacao completa em formato JSON das partidas para reproducao em Replay.
+4. **Persistência Relacional com SQLite**:
+   - Optou-se pelo SQLite nativo da biblioteca padrão Python por sua confiabilidade ACID, sem necessidade de servidores externos locais.
+   - O esquema armazena perfis de jogadores, métricas agregadas de desempenho (vitórias, derrotas, precisão, sequências de acertos) e a serialização completa em formato JSON das partidas para reprodução em Replay.
 
-5. **Multiplayer Online Assincrono via WebSockets**:
-   - Em vez de sockets TCP brutos bloqueantes, utilizou-se o protocolo WebSocket (`asyncio` / `websockets`), viabilizando comunicacao bidirecional em tempo real imune a bloqueios de thread da interface grafica.
-   - Foi desenvolvido um servidor de matchmaking hospedado na nuvem (Render) com fila de pareamento, negociacao de aceite e sincronizacao de frotas customizadas antes do inicio da batalha.
+5. **Multiplayer Online Assíncrono via WebSockets**:
+   - Em vez de sockets TCP brutos bloqueantes, utilizou-se o protocolo WebSocket (`asyncio` / `websockets`), viabilizando comunicação bidirecional em tempo real imune a bloqueios de thread da interface gráfica.
+   - Foi desenvolvido um servidor de matchmaking hospedado na nuvem (Render) com fila de pareamento, negociação de aceite e sincronização de frotas customizadas antes do início da batalha.
 
 ---
 
 ## Mapeamento de Requisitos
 
 ### Requisitos Funcionais (RF)
-* **[RF01]** **Menu Principal**: Interface interativa com opcoes de Novo Jogo, Opcoes, Estatisticas, Replays, Creditos e Saida.
-* **[RF02]** **Tabuleiro 10x10**: Matrizes de 10 linhas por 10 colunas (A a J, 1 a 10) para cada jogador com coordenadas matriciais e alfanumericas.
-* **[RF03]** **Tipos de Navio**: Suporte a Navios Pequenos (2 posicoes) e Navios Grandes (4 posicoes).
-* **[RF04]** **Posicionamento Automático**: Algoritmo para posicionamento randomico e estrategico de frotas sem sobreposicoes e respeitando limites do tabuleiro.
-* **[RF05]** **Validação de Jogadas**: Validacao rigorosa de coordenadas (A1-J10) e rejeicao imediata de jogadas repetidas com excecoes dedicadas.
-* **[RF06]** **Feedback de Disparos**: Mensagens visuais explicativas e animacoes com particulas para Agua, Acerto e Navio Afundado.
+* **[RF01]** **Menu Principal**: Interface interativa com opções de Novo Jogo, Opções, Estatísticas, Replays, Créditos e Saída.
+* **[RF02]** **Tabuleiro 10x10**: Matrizes de 10 linhas por 10 colunas (A a J, 1 a 10) para cada jogador com coordenadas matriciais e alfanuméricas.
+* **[RF03]** **Tipos de Navio**: Suporte a Navios Pequenos (2 posições) e Navios Grandes (4 posições).
+* **[RF04]** **Posicionamento Automático**: Algoritmo para posicionamento randômico e estratégico de frotas sem sobreposições e respeitando limites do tabuleiro.
+* **[RF05]** **Validação de Jogadas**: Validação rigorosa de coordenadas (A1-J10) e rejeição imediata de jogadas repetidas com exceções dedicadas.
+* **[RF06]** **Feedback de Disparos**: Mensagens visuais explicativas e animações com partículas para Água, Acerto e Navio Afundado.
 * **[RF07]** **Encerramento da Partida**: Janela final exibindo vencedor, total de jogadas, aproveitamento e tempo total de jogo.
 * **[RF08]** **Nova Partida**: Permite reiniciar ou iniciar novas partidas a qualquer momento.
-* **[RF09]** **Modos de Jogo**: Jogador vs Computador (4 dificuldades), Dois Jogadores Local, Computador vs Computador (Simulacao) e Dois Jogadores Online via WebSocket.
-* **[RF10]** **Posicionamento e Conferência**: Interface interativa com posicionamento por clique, rotacao com tecla 'R'/botao direito, contadores em tempo real e validacao antes da batalha.
-* **[RF11]** **Histórico de Jogadas**: Painel lateral em tempo real com rolagem exibindo turno, jogador, coordenada, resultado e embarcacao atingida.
-* **[RF12]** **Estatísticas de Desempenho**: Dashboard com partidas jogadas, vitorias, derrotas, taxa de precisao %, maior sequencia de acertos e recorde de menor numero de jogadas para vencer.
-* **[RF13]** **Modo Replay Interativo**: Gravador e reprodutor completo com Play/Pause, avancar passo a passo, voltar, reiniciar e velocidade variavel (1x, 2x, 4x).
+* **[RF09]** **Modos de Jogo**: Jogador vs Computador (4 dificuldades), Dois Jogadores Local, Computador vs Computador (Simulação) e Dois Jogadores Online via WebSocket.
+* **[RF10]** **Posicionamento e Conferência**: Interface interativa com posicionamento por clique, rotação com tecla 'R'/botão direito, contadores em tempo real e validação antes da batalha.
+* **[RF11]** **Histórico de Jogadas**: Painel lateral em tempo real com rolagem exibindo turno, jogador, coordenada, resultado e embarcação atingida.
+* **[RF12]** **Estatísticas de Desempenho**: Dashboard com partidas jogadas, vitórias, derrotas, taxa de precisão %, maior sequência de acertos e recorde de menor número de jogadas para vencer.
+* **[RF13]** **Modo Replay Interativo**: Gravador e reprodutor completo com Play/Pause, avançar passo a passo, voltar, reiniciar e velocidade variável (1x, 2x, 4x).
 
 ### Requisitos Não Funcionais (RNF)
 * **[RNF01]** Projeto individual.
-* **[RNF02]** Implementacao em Python 3.10 ou superior.
-* **[RNF03]** Codigo estritamente aderente ao padrao PEP8 com tipagem estatica (`typing`).
-* **[RNF04]** Organizacao modular em pacotes coesos (`backend`, `frontend`).
-* **[RNF05]** Tratamento de excecoes e de entradas invalidas em todos os pontos de interacao.
-* **[RNF06]** Execucao multiplataforma testada nativamente em Linux.
-* **[RNF07 / RNF08]** Interface grafica moderna construida inteiramente sobre Pygame Community Edition.
+* **[RNF02]** Implementação em Python 3.10 ou superior.
+* **[RNF03]** Código estritamente aderente ao padrão PEP8 com tipagem estática (`typing`).
+* **[RNF04]** Organização modular em pacotes coesos (`backend`, `frontend`).
+* **[RNF05]** Tratamento de exceções e de entradas inválidas em todos os pontos de interação.
+* **[RNF06]** Execução multiplataforma testada nativamente em Linux.
+* **[RNF07 / RNF08]** Interface gráfica moderna construída inteiramente sobre Pygame Community Edition.
 
 ### Regras de Negócio (RN)
-* **[RN01]** Coordenadas no formato Letra + Numero (A1 a J10).
-* **[RN02]** Jogada repetida e rejeitada com aviso explicativo, sem consumir o turno do jogador.
-* **[RN03]** Embarcacao considerada afundada apenas quando 100% de suas celulas forem atingidas.
-* **[RN04]** Partida finalizada imediatamente quando todos os navios de uma frota forem destruidos.
-* **[RN05]** O Computador (IA) opera de maneira autonoma com escolhas estritamente validas e sem trapaça (exceto na modalidade extrema onisciente).
+* **[RN01]** Coordenadas no formato Letra + Número (A1 a J10).
+* **[RN02]** Jogada repetida é rejeitada com aviso explicativo, sem consumir o turno do jogador.
+* **[RN03]** Embarcação considerada afundada apenas quando 100% de suas células forem atingidas.
+* **[RN04]** Partida finalizada imediatamente quando todos os navios de uma frota forem destruídos.
+* **[RN05]** O Computador (IA) opera de maneira autônoma com escolhas estritamente válidas e sem trapaça (exceto na modalidade extrema onisciente).
 
 ---
 
 ## Funcionalidades Implementadas
 
-1. **Menu Inicial Completo**: Novo Jogo (JxC com selecao dedicada de dificuldade e descricao tatica, JxJ Local e Online com tutoriais, Simulacao CxC com escolha de algoritmo para cada computador), Opcoes, Estatisticas, Replays com gerenciamento, Creditos com atribuicoes e Saida.
-2. **Menu de Opções**: Alternancia entre Modo Janela (padrao ao iniciar) e Tela Cheia, selecao dinamica de Resolucao, controles independentes de volume (Master, Musica, Efeitos de Batalha e Interface) e Area de Risco para exclusao total de registros e perfil.
-3. **Navegacao Hierarquica**: Pilha de navegacao que garante retorno consistente ao nivel anterior.
-4. **Cronometro em Tempo Real**: Temporizador isolado no HUD com suporte a pausa automatica.
-5. **Painel de Historico Lateral**: Registro cronologico das jogadas com scroll e badges tematicos.
-6. **Estatisticas Persistidas em SQLite**: Banco de dados relacional em `data/batalha_naval.db` com criacao automatica de tabelas e calculo de taxas de conversao.
-7. **Captura e Selecao de Perfil**: Identificacao inicial do jogador salva e associada a todas as partidas.
-8. **Player de Replays Interativo**: Visualizador com duplo tabuleiro, autoplay, retrocesso passo a passo, variacao de velocidade e exclusao de gravacoes.
-9. **UI Moderna e Efeitos Sonoros**: Sprites nauticos Kenney, particulas de fumaca e impacto, sons de canhao, explosoes, trilha sonora e feedback auditivo.
-10. **Janelas Modais e Notificacoes Toasts**: Modais dinamicos de confirmacao e notificacoes flutuantes temporizadas na base da tela.
+1. **Menu Inicial Completo**: Novo Jogo (JxC com seleção dedicada de dificuldade e descrição tática, JxJ Local e Online com tutoriais, Simulação CxC com escolha de algoritmo para cada computador), Opções, Estatísticas, Replays com gerenciamento, Créditos com atribuições e Saída.
+2. **Menu de Opções**: Alternância entre Modo Janela (padrão ao iniciar) e Tela Cheia, seleção dinâmica de Resolução, controles independentes de volume (Master, Música, Efeitos de Batalha e Interface) e Área de Risco para exclusão total de registros e perfil.
+3. **Navegação Hierárquica**: Pilha de navegação que garante retorno consistente ao nível anterior.
+4. **Cronômetro em Tempo Real**: Temporizador isolado no HUD com suporte a pausa automática.
+5. **Painel de Histórico Lateral**: Registro cronológico das jogadas com scroll e badges temáticos.
+6. **Estatísticas Persistidas em SQLite**: Banco de dados relacional em `data/batalha_naval.db` com criação automática de tabelas e cálculo de taxas de conversão.
+7. **Captura e Seleção de Perfil**: Identificação inicial do jogador salva e associada a todas as partidas.
+8. **Player de Replays Interativo**: Visualizador com duplo tabuleiro, autoplay, retrocesso passo a passo, variação de velocidade e exclusão de gravações.
+9. **UI Moderna e Efeitos Sonoros**: Sprites náuticos Kenney, partículas de fumaça e impacto, sons de canhão, explosões, trilha sonora e feedback auditivo.
+10. **Janelas Modais e Notificações Toasts**: Modais dinâmicos de confirmação e notificações flutuantes temporizadas na base da tela.
 11. **4 Níveis de Inteligência Artificial**:
-    - **Facil**: Disparos puramente aleatorios entre as celulas disponiveis.
-    - **Medio**: Estrategia de Caca e Alvo (*Hunt and Target*) com padrao checkerboard de paridade e busca ortogonal.
-    - **Dificil**: Mapa de Densidade de Probabilidade (*Probability Density Function*) calculando sobreposicoes possiveis de navios remanescentes em tempo real.
-    - **Impossivel (Marechal Anthony)**: Onisciencia tatica com 100% de precisao e capacidade de reposicionar estrategicamente as proprias embarcacoes em alto mar a cada turno.
-12. **Multiplayer Online com Matchmaking**: Conexao WebSocket com servidor na nuvem (Render), fila de espera automatica, popup de aceite com contagem regressiva de 10 segundos e preparacao manual de frota para ambos os jogadores.
+    - **Fácil**: Disparos puramente aleatórios entre as células disponíveis.
+    - **Médio**: Estratégia de Caça e Alvo (*Hunt and Target*) com padrão checkerboard de paridade e busca ortogonal.
+    - **Difícil**: Mapa de Densidade de Probabilidade (*Probability Density Function*) calculando sobreposições possíveis de navios remanescentes em tempo real.
+    - **Impossível (Marechal Anthony)**: Onisciência tática com 100% de precisão e capacidade de reposicionar estrategicamente as próprias embarcações em alto mar a cada turno.
+12. **Multiplayer Online com Matchmaking**: Conexão WebSocket com servidor na nuvem (Render), fila de espera automática, popup de aceite com contagem regressiva de 10 segundos e preparação manual de frota para ambos os jogadores.
 
 ---
 
