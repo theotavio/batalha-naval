@@ -33,49 +33,78 @@ class IADificil(IABase):
 
     def calcular_matriz_probabilidade(self, tabuleiro: Tabuleiro) -> list[list[float]]:
         tamanhos_restantes = self._obter_tamanhos_navios_restantes(tabuleiro)
+        menor_tamanho = min(tamanhos_restantes)
         matriz = [[0.0 for _ in range(TAMANHO_TABULEIRO)] for _ in range(TAMANHO_TABULEIRO)]
         acertos_vivos: set[tuple[int, int]] = set()
         for l in range(TAMANHO_TABULEIRO):
             for c in range(TAMANHO_TABULEIRO):
                 if tabuleiro.obter_celula(l, c) == EstadoCelula.ACERTO:
                     acertos_vivos.add((l, c))
+        tem_acertos = len(acertos_vivos) > 0
         for tamanho in tamanhos_restantes:
             for l in range(TAMANHO_TABULEIRO):
                 for c in range(TAMANHO_TABULEIRO - tamanho + 1):
                     segmento = [(l, c + i) for i in range(tamanho)]
-                    if self._segmento_e_valido(segmento, tabuleiro):
-                        acertos_no_seg = sum((1 for p in segmento if p in acertos_vivos))
-                        if acertos_no_seg > 0:
-                            peso = 100.0 * 10.0 ** acertos_no_seg
-                        elif len(acertos_vivos) > 0:
-                            peso = 0.05
+                    valido = True
+                    acertos_no_seg = 0
+                    nao_atacadas: list[tuple[int, int]] = []
+                    for pl, pc in segmento:
+                        pos = Posicao(pl, pc)
+                        if tabuleiro.foi_atacada(pos):
+                            cel = tabuleiro.obter_celula(pl, pc)
+                            if cel in (EstadoCelula.AGUA, EstadoCelula.AFUNDADO):
+                                valido = False
+                                break
+                            elif cel == EstadoCelula.ACERTO:
+                                acertos_no_seg += 1
+                        else:
+                            nao_atacadas.append((pl, pc))
+                    if valido and nao_atacadas:
+                        if tem_acertos:
+                            if acertos_no_seg > 0:
+                                peso = 1000.0 * (50.0 ** acertos_no_seg)
+                            else:
+                                peso = 0.01
                         else:
                             peso = 1.0
-                        for pl, pc in segmento:
-                            if not tabuleiro.foi_atacada(Posicao(pl, pc)):
-                                matriz[pl][pc] += peso
+                            if menor_tamanho >= 2:
+                                for pl, pc in nao_atacadas:
+                                    if (pl + pc) % menor_tamanho == 0:
+                                        peso += 0.8
+                        for pl, pc in nao_atacadas:
+                            matriz[pl][pc] += peso
             for l in range(TAMANHO_TABULEIRO - tamanho + 1):
                 for c in range(TAMANHO_TABULEIRO):
                     segmento = [(l + i, c) for i in range(tamanho)]
-                    if self._segmento_e_valido(segmento, tabuleiro):
-                        acertos_no_seg = sum((1 for p in segmento if p in acertos_vivos))
-                        if acertos_no_seg > 0:
-                            peso = 100.0 * 10.0 ** acertos_no_seg
-                        elif len(acertos_vivos) > 0:
-                            peso = 0.05
+                    valido = True
+                    acertos_no_seg = 0
+                    nao_atacadas = []
+                    for pl, pc in segmento:
+                        pos = Posicao(pl, pc)
+                        if tabuleiro.foi_atacada(pos):
+                            cel = tabuleiro.obter_celula(pl, pc)
+                            if cel in (EstadoCelula.AGUA, EstadoCelula.AFUNDADO):
+                                valido = False
+                                break
+                            elif cel == EstadoCelula.ACERTO:
+                                acertos_no_seg += 1
+                        else:
+                            nao_atacadas.append((pl, pc))
+                    if valido and nao_atacadas:
+                        if tem_acertos:
+                            if acertos_no_seg > 0:
+                                peso = 1000.0 * (50.0 ** acertos_no_seg)
+                            else:
+                                peso = 0.01
                         else:
                             peso = 1.0
-                        for pl, pc in segmento:
-                            if not tabuleiro.foi_atacada(Posicao(pl, pc)):
-                                matriz[pl][pc] += peso
+                            if menor_tamanho >= 2:
+                                for pl, pc in nao_atacadas:
+                                    if (pl + pc) % menor_tamanho == 0:
+                                        peso += 0.8
+                        for pl, pc in nao_atacadas:
+                            matriz[pl][pc] += peso
         return matriz
-
-    def _segmento_e_valido(self, segmento: list[tuple[int, int]], tabuleiro: Tabuleiro) -> bool:
-        for l, c in segmento:
-            celula = tabuleiro.obter_celula(l, c)
-            if celula in (EstadoCelula.AGUA, EstadoCelula.AFUNDADO):
-                return False
-        return True
 
     def escolher_jogada(self, tabuleiro_adversario: Tabuleiro) -> Posicao:
         matriz = self.calcular_matriz_probabilidade(tabuleiro_adversario)
@@ -91,7 +120,7 @@ class IADificil(IABase):
                         melhores_posicoes = [pos]
                     elif abs(prob - maior_prob) < 1e-06:
                         melhores_posicoes.append(pos)
-        if not melhores_posicoes:
+        if not melhores_posicoes or maior_prob <= 0.0:
             disponiveis = tabuleiro_adversario.posicoes_nao_atacadas()
             return self._rng.choice(disponiveis)
         return self._rng.choice(melhores_posicoes)

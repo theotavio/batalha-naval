@@ -85,10 +85,10 @@ Jogo completo de **Batalha Naval** desenvolvido em Python para ambiente desktop,
 9. **UI Moderna e Efeitos Sonoros**: Sprites náuticos Kenney, partículas de fumaça e impacto, sons de canhão, explosões, trilha sonora e feedback auditivo.
 10. **Janelas Modais e Notificações Toasts**: Modais dinâmicos de confirmação e notificações flutuantes temporizadas na base da tela.
 11. **4 Níveis de Inteligência Artificial**:
-    - **Fácil**: Disparos puramente aleatórios entre as células disponíveis.
-    - **Médio**: Estratégia de Caça e Alvo (*Hunt and Target*) com padrão checkerboard de paridade e busca ortogonal.
-    - **Difícil**: Mapa de Densidade de Probabilidade (*Probability Density Function*) calculando sobreposições possíveis de navios remanescentes em tempo real.
-    - **Impossível (Marechal Anthony)**: Onisciência tática com 100% de precisão e capacidade de reposicionar estrategicamente as próprias embarcações em alto mar a cada turno.
+    - **Fácil**: Disparos puramente aleatórios entre as células disponíveis (~95 tiros por partida).
+    - **Médio**: Estratégia clássica de Caça e Alvo (*Hunt and Target*) com busca ortogonal (~70 tiros por partida).
+    - **Difícil**: Amostragem Monte Carlo e Mapa de Densidade de Probabilidade (*PDF*) com Poda de Espaços Mortos (*Dead-Space Pruning*) e Paridade Ótima (~50 tiros por partida).
+    - **Impossível (Marechal Anthony)**: Onisciência tática com 100% de precisão (16 tiros) e capacidade de reposicionar estrategicamente as próprias embarcações em alto mar a cada turno.
 12. **Multiplayer Online com Matchmaking**: Conexão WebSocket com servidor na nuvem (Render), fila de espera automática, popup de aceite com contagem regressiva de 10 segundos e preparação manual de frota para ambos os jogadores.
 
 ---

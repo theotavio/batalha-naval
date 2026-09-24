@@ -158,13 +158,13 @@ Hierarquia de exceções customizadas para tratamento semântico de erros de dom
 - `ia_base.py` (`IABase`): Interface abstrata com os métodos `escolher_jogada(tabuleiro)`, `registrar_resultado(posicao, resultado, navio_afundado)` e `reiniciar()`.
 - `ia_facil.py` (`IAFacil`): Escolhe coordenadas puramente aleatórias entre as células ainda não atacadas, sem estratégia de perseguição.
 - `ia_media.py` (`IAMedia`):
-  - Implementa a técnica **Hunt and Target** (Caça e Alvo).
-  - Na fase de Caça, dispara em um padrão de tabuleiro de xadrez (paridade checkerboard) para encontrar navios pequenos e grandes com menos tiros.
-  - Ao acertar um navio, entra no modo Alvo: persegue células vizinhas ortogonalmente até identificar o alinhamento (horizontal/vertical) e destruir o navio por completo.
+  - Implementa a técnica clássica de **Caça e Alvo** (*Hunt and Target*).
+  - Na fase de Caça, realiza varredura exploratória distribuída pelas águas abertas do tabuleiro.
+  - Ao acertar um navio, ativa o modo Alvo: enfileira e persegue ortogonalmente todas as células vizinhas até a destruição total da embarcação.
 - `ia_dificil.py` (`IADificil`):
-  - Implementa o **Mapa de Densidade de Probabilidade** (*Probability Density Function - PDF*).
-  - Para cada célula não atacada, calcula quantas orientações possíveis dos navios remanescentes do adversário poderiam ocupar aquela posição.
-  - Aplica bônus de probabilidade massivo em torno de células atingidas e pondera bordas/cantos, escolhendo sempre a célula de maior probabilidade estatística de acerto.
+  - Implementa **Amostragem Monte Carlo / Mapa de Densidade de Probabilidade (PDF)** combinada com **Poda de Espaços Mortos (*Dead-Space Pruning*)** e **Paridade Ótima**.
+  - Simula dinamicamente todas as combinações válidas de posicionamento conjunto dos navios remanescentes da frota, podando automaticamente qualquer região ou ilha de células onde nenhuma embarcação restante cabe.
+  - Na fase de caça, prioriza a paridade do menor navio vivo; quando há acertos ativos não afundados, aplica peso exponencial sobre as retas e eixos dos acertos, alcançando média de ~50 tiros por vitória.
 - `ia_impossivel.py` (`IAImpossivel - Marechal Anthony`):
   - IA onisciente de precisão cirúrgica (100% de acerto).
   - Possui o método exclusivo `reposicionar_frota_propria(tabuleiro)` que move seus próprios navios não danificados para novas posições seguras no tabuleiro a cada turno, simulando manobras táticas contínuas.
