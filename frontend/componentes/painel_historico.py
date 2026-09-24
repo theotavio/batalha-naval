@@ -16,6 +16,10 @@ class PainelHistorico:
     def definir_jogadas(self, jogadas: list[Jogada]) -> None:
         self.jogadas = jogadas
 
+    def limpar(self) -> None:
+        self.jogadas = []
+        self.offset_scroll = 0
+
     def rolar_para_o_fim(self) -> None:
         total_altura = len(self.jogadas) * self.item_altura
         max_scroll = max(0, total_altura - (self.rect.height - 50))

@@ -8,6 +8,41 @@ class Repositorio:
     def __init__(self, banco: BancoDados | None=None) -> None:
         self.banco = banco or BancoDados()
 
+    def definir_configuracao(self, chave: str, valor: str) -> None:
+        with self.banco.obter_conexao() as conn:
+            cursor = conn.cursor()
+            cursor.execute('\n                INSERT INTO configuracoes (chave, valor) VALUES (?, ?)\n                ON CONFLICT(chave) DO UPDATE SET valor = excluded.valor\n            ', (chave, str(valor)))
+            conn.commit()
+
+    def obter_configuracao(self, chave: str, padrao: str | None=None) -> str | None:
+        with self.banco.obter_conexao() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT valor FROM configuracoes WHERE chave = ?', (chave,))
+            row = cursor.fetchone()
+            if row:
+                return str(row['valor'])
+            return padrao
+
+    def obter_ultimo_jogador(self) -> dict[str, Any] | None:
+        with self.banco.obter_conexao() as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT valor FROM configuracoes WHERE chave = ?', ('ultimo_jogador_id',))
+            row = cursor.fetchone()
+            if row:
+                try:
+                    jogador_id = int(row['valor'])
+                    cursor.execute('SELECT id, nome, data_criacao FROM jogadores WHERE id = ?', (jogador_id,))
+                    jogador_row = cursor.fetchone()
+                    if jogador_row:
+                        return dict(jogador_row)
+                except Exception:
+                    pass
+            cursor.execute('SELECT id, nome, data_criacao FROM jogadores ORDER BY id DESC LIMIT 1')
+            row = cursor.fetchone()
+            if row:
+                return dict(row)
+            return None
+
     def obter_ou_criar_jogador(self, nome: str) -> dict[str, Any]:
         nome_limpo = nome.strip()
         if not nome_limpo:
@@ -17,11 +52,14 @@ class Repositorio:
             cursor.execute('SELECT id, nome, data_criacao FROM jogadores WHERE nome = ?', (nome_limpo,))
             row = cursor.fetchone()
             if row:
-                return dict(row)
+                dados = dict(row)
+                self.definir_configuracao('ultimo_jogador_id', str(dados['id']))
+                return dados
             cursor.execute('INSERT INTO jogadores (nome) VALUES (?)', (nome_limpo,))
             jogador_id = cursor.lastrowid
             cursor.execute('\n                INSERT INTO estatisticas (\n                    jogador_id, partidas_jogadas, vitorias, derrotas,\n                    acertos, erros, maior_sequencia_acertos, menor_jogadas_vitoria\n                ) VALUES (?, 0, 0, 0, 0, 0, 0, NULL)\n                ', (jogador_id,))
             conn.commit()
+            self.definir_configuracao('ultimo_jogador_id', str(jogador_id))
             return {'id': jogador_id, 'nome': nome_limpo}
 
     def listar_jogadores(self) -> list[dict[str, Any]]:

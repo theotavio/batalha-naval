@@ -3,4 +3,5 @@ __pycache__/
 *$py.class
 *.db
 data/*.db
-
+RELATORIO_TECNICO.md
+*relatorio*.md

@@ -42,14 +42,20 @@ class JogoPrincipal:
         self.clock = pygame.time.Clock()
         self.rodando: bool = True
         self.repositorio = Repositorio()
-        self.jogador_ativo_id: int = 1
-        self.jogador_ativo_nome: str = 'Jogador'
+        ultimo_jogador = self.repositorio.obter_ultimo_jogador()
+        if ultimo_jogador:
+            self.jogador_ativo_id: int = ultimo_jogador['id']
+            self.jogador_ativo_nome: str = ultimo_jogador['nome']
+            self.tela_atual_nome: str = 'menu'
+        else:
+            self.jogador_ativo_id = 1
+            self.jogador_ativo_nome = 'Jogador'
+            self.tela_atual_nome = 'splash'
         self.assets = GerenciadorAssets.obter_instancia()
         self.som = GerenciadorSom.obter_instancia()
         self.pilha_telas: list[str] = []
-        self.tela_atual_nome: str = 'splash'
         self.telas: dict[str, TelaBase] = {'splash': TelaSplashNome(self), 'menu': TelaMenu(self), 'opcoes': TelaOpcoes(self), 'selecao_modo': TelaSelecaoModo(self), 'selecao_dificuldade': TelaSelecaoDificuldade(self), 'selecao_pvp': TelaSelecaoPvP(self), 'posicionamento': TelaPosicionamento(self), 'partida': TelaPartida(self), 'estatisticas': TelaEstatisticas(self), 'replays': TelaReplays(self), 'creditos': TelaCreditos(self), 'multiplayer': TelaMultiplayer(self)}
-        self.tela_atual: TelaBase = self.telas['splash']
+        self.tela_atual: TelaBase = self.telas[self.tela_atual_nome]
         self.tela_atual.inicializar()
 
     def definir_fullscreen(self, fullscreen: bool) -> None:
@@ -74,6 +80,7 @@ class JogoPrincipal:
     def definir_jogador_ativo(self, id_jogador: int, nome: str) -> None:
         self.jogador_ativo_id = id_jogador
         self.jogador_ativo_nome = nome
+        self.repositorio.definir_configuracao('ultimo_jogador_id', str(id_jogador))
 
     def mudar_tela(self, nome_tela: str, registrar_historico: bool=True, **kwargs: Any) -> None:
         if registrar_historico and self.tela_atual_nome:

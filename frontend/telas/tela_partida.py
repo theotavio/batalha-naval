@@ -56,6 +56,8 @@ class TelaPartida(TelaBase):
         self.modal_ativo = None
         self.fim_de_jogo_exibido = False
         self._aguardando_jogada_ia = False
+        self.painel_historico.limpar()
+        self.painel_historico.definir_jogadas(self.partida.historico_jogadas)
         self.som.tocar_musica('wowchapter1')
         j1 = self.partida.jogador1
         j2 = self.partida.jogador2
