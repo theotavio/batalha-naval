@@ -131,7 +131,7 @@ class TelaPartida(TelaBase):
         tempo_str = resumo['tempo_formatado']
         mensagem = f"VENCEDOR: {vencedor.upper()}!\n\n• Total de Disparos: {total_jogadas}\n• Duração da Partida: {tempo_str}\n• Aproveitamento {resumo['j1_nome']}: {resumo['j1_aproveitamento']}%\n• Aproveitamento {resumo['j2_nome']}: {resumo['j2_aproveitamento']}%"
         self.som.tocar_som('SoundMessageSuccess')
-        self.modal_ativo = Modal(titulo='VITÓRIA NAVAL!', mensagem=mensagem, tipo='CONFIRMACAO', texto_confirmar='Ver Replay', texto_cancelar='Menu Principal', on_confirmar=lambda: self.jogo.mudar_tela('replays'), on_cancelar=lambda: self.jogo.mudar_tela('menu', registrar_historico=False), largura=520, altura=340)
+        self.modal_ativo = Modal(titulo='VITÓRIA NAVAL!', mensagem=mensagem, tipo='CONFIRMACAO', texto_confirmar='Ver Replay', texto_cancelar='Menu Principal', on_confirmar=lambda: self.jogo.mudar_tela('replays', registrar_historico=False), on_cancelar=lambda: self.jogo.mudar_tela('menu', registrar_historico=False), largura=520, altura=340)
 
     def _sair_para_menu(self) -> None:
         if self.cliente_rede:
@@ -202,7 +202,7 @@ class TelaPartida(TelaBase):
                 if self.partida.estado == EstadoPartida.EM_ANDAMENTO:
                     self.partida._finalizar_partida(vencedor=self.partida.jogador1)
                     self.som.tocar_som('SoundMessageSuccess')
-                    self.modal_ativo = Modal(titulo='OPONENTE DESCONECTOU', mensagem='O adversário desconectou ou abandonou a partida.\nVocê venceu por desistência!', tipo='CONFIRMACAO', texto_confirmar='Ver Replay', texto_cancelar='Menu Principal', on_confirmar=lambda: self.jogo.mudar_tela('replays'), on_cancelar=self._sair_para_menu, largura=520, altura=320)
+                    self.modal_ativo = Modal(titulo='OPONENTE DESCONECTOU', mensagem='O adversário desconectou ou abandonou a partida.\nVocê venceu por desistência!', tipo='CONFIRMACAO', texto_confirmar='Ver Replay', texto_cancelar='Menu Principal', on_confirmar=lambda: self.jogo.mudar_tela('replays', registrar_historico=False), on_cancelar=self._sair_para_menu, largura=520, altura=320)
                 return
             evento = self.cliente_rede.obter_evento()
 

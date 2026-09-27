@@ -1,6 +1,7 @@
 from __future__ import annotations
 import sys
 import copy
+from pathlib import Path
 from typing import Any
 import pygame
 from backend.constantes import ModoJogo, DificuldadeIA
@@ -37,6 +38,7 @@ class JogoPrincipal:
         self.fullscreen: bool = False
         self.resolucao_atual: tuple[int, int] = (LARGURA_TELA, ALTURA_TELA)
         self.tela = pygame.display.set_mode(self.resolucao_atual)
+        self._configurar_icone()
         self.canvas_virtual = pygame.Surface((LARGURA_TELA, ALTURA_TELA))
         pygame.display.set_caption(TITULO_JOGO)
         self.clock = pygame.time.Clock()
@@ -58,6 +60,23 @@ class JogoPrincipal:
         self.tela_atual: TelaBase = self.telas[self.tela_atual_nome]
         self.tela_atual.inicializar()
 
+    def _configurar_icone(self) -> None:
+        try:
+            caminho_icon = Path(__file__).resolve().parent / 'assets' / 'sprites' / 'PNG' / 'Retina' / 'Ships' / 'ship (5).png'
+            if not caminho_icon.exists():
+                caminho_icon = Path(__file__).resolve().parent / 'assets' / 'sprites' / 'PNG' / 'Default size' / 'Ships' / 'ship (5).png'
+            if caminho_icon.exists():
+                ship_img = pygame.image.load(str(caminho_icon)).convert_alpha()
+                tam = 64
+                surf_icon = pygame.Surface((tam, tam), pygame.SRCALPHA)
+                pygame.draw.circle(surf_icon, (11, 19, 43), (tam // 2, tam // 2), tam // 2 - 2)
+                pygame.draw.circle(surf_icon, (6, 182, 212), (tam // 2, tam // 2), tam // 2 - 2, width=3)
+                ship_scaled = pygame.transform.smoothscale(ship_img, (26, 44))
+                surf_icon.blit(ship_scaled, ((tam - 26) // 2, (tam - 44) // 2))
+                pygame.display.set_icon(surf_icon)
+        except Exception:
+            pass
+
     def definir_fullscreen(self, fullscreen: bool) -> None:
         self.fullscreen = fullscreen
         if self.fullscreen:
@@ -71,11 +90,13 @@ class JogoPrincipal:
         else:
             self.resolucao_atual = (LARGURA_TELA, ALTURA_TELA)
             self.tela = pygame.display.set_mode(self.resolucao_atual)
+        self._configurar_icone()
 
     def definir_resolucao(self, resolucao: tuple[int, int]) -> None:
         self.resolucao_atual = resolucao
         self.fullscreen = False
         self.tela = pygame.display.set_mode(self.resolucao_atual)
+        self._configurar_icone()
 
     def definir_jogador_ativo(self, id_jogador: int, nome: str) -> None:
         self.jogador_ativo_id = id_jogador
@@ -84,7 +105,7 @@ class JogoPrincipal:
 
     def mudar_tela(self, nome_tela: str, registrar_historico: bool=True, **kwargs: Any) -> None:
         if registrar_historico and self.tela_atual_nome:
-            if self.tela_atual_nome not in ('splash', nome_tela):
+            if self.tela_atual_nome not in ('splash', 'partida', nome_tela):
                 self.pilha_telas.append(self.tela_atual_nome)
         if nome_tela in self.telas:
             self.tela_atual_nome = nome_tela
@@ -92,11 +113,12 @@ class JogoPrincipal:
             self.tela_atual.inicializar(**kwargs)
 
     def voltar_tela(self, **kwargs: Any) -> None:
-        if self.pilha_telas:
+        while self.pilha_telas:
             tela_anterior = self.pilha_telas.pop()
-            self.mudar_tela(tela_anterior, registrar_historico=False, **kwargs)
-        else:
-            self.mudar_tela('menu', registrar_historico=False, **kwargs)
+            if tela_anterior not in ('partida', 'splash'):
+                self.mudar_tela(tela_anterior, registrar_historico=False, **kwargs)
+                return
+        self.mudar_tela('menu', registrar_historico=False, **kwargs)
 
     def iniciar_partida_jxc(self, tabuleiro_humano: Tabuleiro, dificuldade: DificuldadeIA | None) -> None:
         j1 = JogadorHumano(nome=self.jogador_ativo_nome, id_jogador=self.jogador_ativo_id)
@@ -110,7 +132,8 @@ class JogoPrincipal:
         else:
             j2.tabuleiro.posicionar_automaticamente()
         partida = Partida(jogador1=j1, jogador2=j2, modo_jogo=ModoJogo.JOGADOR_VS_COMPUTADOR, dificuldade=dif, repositorio=self.repositorio)
-        self.mudar_tela('partida', partida=partida)
+        self.pilha_telas.clear()
+        self.mudar_tela('partida', registrar_historico=False, partida=partida)
 
     def iniciar_partida_jxj_local(self, tabuleiro_j1: Tabuleiro, tabuleiro_j2: Tabuleiro) -> None:
         j1 = JogadorHumano(nome=self.jogador_ativo_nome, id_jogador=self.jogador_ativo_id)
@@ -118,7 +141,8 @@ class JogoPrincipal:
         j2 = JogadorHumano(nome='Jogador 2', id_jogador=998)
         j2.tabuleiro = tabuleiro_j2
         partida = Partida(jogador1=j1, jogador2=j2, modo_jogo=ModoJogo.JOGADOR_VS_JOGADOR_LOCAL, repositorio=self.repositorio)
-        self.mudar_tela('partida', partida=partida)
+        self.pilha_telas.clear()
+        self.mudar_tela('partida', registrar_historico=False, partida=partida)
 
     def iniciar_partida_cxc(self, dificuldade: DificuldadeIA | None=None) -> None:
         dif = dificuldade or DificuldadeIA.DIFICIL
@@ -135,7 +159,8 @@ class JogoPrincipal:
             j1.tabuleiro.posicionar_automaticamente()
             j2.tabuleiro.posicionar_automaticamente()
         partida = Partida(jogador1=j1, jogador2=j2, modo_jogo=ModoJogo.COMPUTADOR_VS_COMPUTADOR, dificuldade=dif, repositorio=self.repositorio)
-        self.mudar_tela('partida', partida=partida)
+        self.pilha_telas.clear()
+        self.mudar_tela('partida', registrar_historico=False, partida=partida)
 
     def iniciar_partida_multiplayer(self, cliente_rede: Any, tabuleiro_local: Tabuleiro | None=None, payload: dict[str, Any] | None=None) -> None:
         j1 = JogadorHumano(nome=self.jogador_ativo_nome, id_jogador=self.jogador_ativo_id)
@@ -153,7 +178,8 @@ class JogoPrincipal:
         sua_vez = payload.get('sua_vez', True) if payload else True
         if not sua_vez:
             partida.jogador_da_vez = j2
-        self.mudar_tela('partida', partida=partida, cliente_rede=cliente_rede)
+        self.pilha_telas.clear()
+        self.mudar_tela('partida', registrar_historico=False, partida=partida, cliente_rede=cliente_rede)
 
     def encerrar_jogo(self) -> None:
         self.rodando = False

@@ -86,6 +86,8 @@ class TabuleiroRender:
                 pygame.draw.rect(superficie, COR_LINHA_GRID, cell_rect, width=1)
         if self.revelar_navios:
             self._desenhar_navios(superficie, assets)
+        else:
+            self._desenhar_navios_afundados(superficie, assets)
         if self.navio_fantasma and self.celula_hover:
             self._desenhar_fantasma(superficie)
         self._desenhar_marcadores_tiros(superficie, assets)
@@ -98,6 +100,16 @@ class TabuleiroRender:
             py = self.grid_y + l_ini * self.celula_tamanho
             surf_navio = assets.obter_navio_surface(navio.tamanho, navio.orientacao.value, celula_px=self.celula_tamanho, sprite_id=navio.sprite_id, afundado=navio.esta_afundado())
             superficie.blit(surf_navio, (px, py))
+
+    def _desenhar_navios_afundados(self, superficie: pygame.Surface, assets: GerenciadorAssets) -> None:
+        for navio in self.tabuleiro.navios:
+            if navio.esta_afundado():
+                l_ini = navio.posicao_inicial.linha
+                c_ini = navio.posicao_inicial.coluna
+                px = self.grid_x + c_ini * self.celula_tamanho
+                py = self.grid_y + l_ini * self.celula_tamanho
+                surf_navio = assets.obter_navio_surface(navio.tamanho, navio.orientacao.value, celula_px=self.celula_tamanho, sprite_id=navio.sprite_id, afundado=True)
+                superficie.blit(surf_navio, (px, py))
 
     def _desenhar_fantasma(self, superficie: pygame.Surface) -> None:
         if not self.navio_fantasma or not self.celula_hover:
