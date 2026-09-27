@@ -109,11 +109,6 @@ pip install -r requirements.txt
 python3 main.py
 ```
 
-### 3. (Opcional) Executar Servidor Local de Matchmaking
-```bash
-python3 backend/rede/servidor_matchmaking.py
-```
-
 ---
 
 ## Licenças e Atribuições dos Assets
